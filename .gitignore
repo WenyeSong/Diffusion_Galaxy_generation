@@ -1,0 +1,80 @@
+# very large model files
+*.pb
+*.ckpt*
+*.index
+*.neptune*
+*.pth
+*.hdf5
+*.h5
+*.pt
+
+# Model checkpoints and logs
+Training/Model_Checkpoints_wy/
+Training/Model_Checkpoints_wy_v2/
+Training/tens_logs_wy/
+Training/tens_logs_wy_v2/
+Training/Logs_wy/
+Training/Logs_wy_v2/
+
+# Compiled files
+*.py[cod]
+*.a
+*.o
+*.so
+__pycache__
+*__pycache__*
+
+# Ignore C/C++ files by default to avoid including generated code. If you want to
+# add a non-generated .c extension, use `git add -f filename.c`.
+*.c
+*.cpp
+
+# Other generated files
+*/version.py
+*/cython_version.py
+htmlcov
+.coverage
+MANIFEST
+.ipynb_checkpoints
+
+# Sphinx
+docs/api
+docs/_build
+
+# Eclipse editor project files
+.project
+.pydevproject
+.settings
+
+# Pycharm editor project files
+.idea
+
+# Floobits project files
+.floo
+.flooignore
+
+# Packages/installer info
+*.egg
+*.egg-info
+dist
+build
+eggs
+parts
+bin
+var
+sdist
+develop-eggs
+.installed.cfg
+distribute-*.tar.gz
+
+# Other
+.cache
+.tox
+.*.sw[op]
+*~
+.project
+.pydevproject
+.settings
+
+# Mac OSX
+.DS_Store
