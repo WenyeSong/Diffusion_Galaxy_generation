@@ -16,6 +16,12 @@ Training/tens_logs_wy_v2/
 Training/Logs_wy/
 Training/Logs_wy_v2/
 
+# Large CSV files
+Metrics/AndrewMetrics.csv
+Metrics/testing_metrics.csv
+Metrics/generated_images_metrics_wy.csv
+Metrics/testing_images_metrics_wy.csv
+
 # Compiled files
 *.py[cod]
 *.a
