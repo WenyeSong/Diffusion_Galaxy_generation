@@ -23,8 +23,9 @@ os.makedirs(OUTPUT_DIR, exist_ok=True)
 TEST_CSV      = os.path.join(OUTPUT_DIR, 'testing_images_metrics.csv')
 GEN_CSV       = os.path.join(OUTPUT_DIR, 'generated_images_metrics.csv')
 
-BATCH_SIZE    = 100
-MAX_IMAGES    = 10000   # match number of generated images
+BATCH_SIZE        = 100
+MAX_TEST_IMAGES   = 40914   # full test set (matches paper)
+MAX_GEN_IMAGES    = 10000   # number of generated images
 
 # ─── Logging ───────────────────────────────────────────────────────────────────
 logging.basicConfig(
@@ -133,7 +134,7 @@ if os.path.exists(TEST_CSV):
 with h5py.File(TESTING_HDF5, 'r') as f:
     images_ds   = f['image']
     redshift_ds = f['specz_redshift']
-    num_images  = min(images_ds.shape[0], MAX_IMAGES)
+    num_images  = min(images_ds.shape[0], MAX_TEST_IMAGES)
 
     with tqdm(total=num_images, desc='Testing images') as pbar:
         for i in range(0, num_images, BATCH_SIZE):
@@ -163,7 +164,7 @@ pt_files = sorted([
     os.path.join(GENERATED_DIR, f)
     for f in os.listdir(GENERATED_DIR)
     if f.endswith('.pt') and f.startswith('generated_image_')
-])[:MAX_IMAGES]
+])[:MAX_GEN_IMAGES]
 
 redshifts = np.load(GENERATED_Z_FILE) if os.path.exists(GENERATED_Z_FILE) else [None] * len(pt_files)
 

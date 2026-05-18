@@ -1,6 +1,6 @@
 """
 Analysis script - reproduces paper Figure 3, Figure 4, and Table 1.
-Also compares reproduced results with Andrew's original paper results.
+Also compares reproduced results with paper results.
 """
 
 import numpy as np
@@ -23,7 +23,7 @@ orig_test = pd.read_csv(ORIG_TEST)
 
 print(f"Reproduced real images:      {len(test_df)}")
 print(f"Reproduced generated images: {len(gen_df)}")
-print(f"Andrew generated:            {len(andrew_df)}")
+print(f"Paper generated:             {len(andrew_df)}")
 print(f"Original test set:           {len(orig_test)}")
 
 METRICS = ['Ellipticity', 'Semi-major Axis', 'Sersic Index', 'Isophotal Area']
@@ -40,9 +40,9 @@ XLIMS = {
 REAL_COLOR = '#4575b4'   # blue
 GEN_COLOR  = '#d73027'   # red
 
-# Comparison colors (wy vs Andrew)
-WY_COLOR     = '#7b2d8b'  # purple
-ANDREW_COLOR = '#1a9641'  # green
+# Comparison colors (wy vs Paper)
+WY_COLOR     = '#d73027'  # same red as GEN_COLOR
+PAPER_COLOR  = '#1a9641'  # green
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -54,7 +54,7 @@ fig, axes = plt.subplots(1, 4, figsize=(16, 4))
 fig.patch.set_facecolor('#f0f0f0')
 
 for ax, metric in zip(axes, METRICS):
-    real_data = test_df[metric].dropna()
+    real_data = test_df[metric].dropna()  # use SEP-extracted test metrics
     gen_data  = gen_df[metric].dropna()
 
     xmin, xmax = XLIMS[metric]
@@ -85,38 +85,56 @@ print("Saved: figure3_reproduce.png")
 REDSHIFT_BINS = np.array([0, 0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0])
 BIN_CENTERS   = 0.5 * (REDSHIFT_BINS[:-1] + REDSHIFT_BINS[1:])
 
-fig, axes = plt.subplots(1, 4, figsize=(16, 4))
-fig.patch.set_facecolor('#f0f0f0')
+# Y-axis limits matching paper
+YLIMS_FIG4 = {
+    'Ellipticity':     (-0.05, 0.70),
+    'Semi-major Axis': (-0.5,  10),
+    'Sersic Index':    (-0.3,  6.0),
+    'Isophotal Area':  (-50,   2000),
+}
+
+fig, axes = plt.subplots(1, 4, figsize=(16, 5))
+fig.patch.set_facecolor('white')
 
 for ax, metric in zip(axes, METRICS):
-    real_means, real_cis = [], []
-    gen_means,  gen_cis  = [], []
+    real_means, real_stds = [], []
+    gen_means,  gen_stds  = [], []
 
     for lo, hi in zip(REDSHIFT_BINS[:-1], REDSHIFT_BINS[1:]):
         r_bin = test_df[(test_df['Redshift'] >= lo) & (test_df['Redshift'] < hi)][metric].dropna()
         g_bin = gen_df[(gen_df['Redshift']   >= lo) & (gen_df['Redshift']  < hi)][metric].dropna()
 
+        def clip_bin(b):
+            if len(b) < 2:
+                return b
+            lo_p, hi_p = b.quantile(0.05), b.quantile(0.95)
+            return b[(b >= lo_p) & (b <= hi_p)]
+
         real_means.append(r_bin.mean() if len(r_bin) > 0 else np.nan)
         gen_means.append( g_bin.mean() if len(g_bin) > 0 else np.nan)
-        real_cis.append(1.96 * sem(r_bin) if len(r_bin) > 1 else np.nan)
-        gen_cis.append( 1.96 * sem(g_bin) if len(g_bin) > 1 else np.nan)
+        real_stds.append(clip_bin(r_bin).std() if len(r_bin) > 1 else np.nan)
+        gen_stds.append( clip_bin(g_bin).std() if len(g_bin) > 1 else np.nan)
 
-    ax.errorbar(BIN_CENTERS, gen_means,  yerr=gen_cis,
+    ax.errorbar(BIN_CENTERS, gen_means,  yerr=gen_stds,
                 fmt='o', color=GEN_COLOR,  label='Reproduce',
-                capsize=4, capthick=1.5, elinewidth=1.5, markersize=5)
-    ax.errorbar(BIN_CENTERS, real_means, yerr=real_cis,
+                capsize=3, capthick=1.2, elinewidth=1.2, markersize=5)
+    ax.errorbar(BIN_CENTERS, real_means, yerr=real_stds,
                 fmt='o', color=REAL_COLOR, label='Real',
-                capsize=4, capthick=1.5, elinewidth=1.5, markersize=5)
+                capsize=3, capthick=1.2, elinewidth=1.2, markersize=5)
 
     ax.set_xlabel('Redshift Bins', fontsize=11)
     ax.set_ylabel(metric, fontsize=11)
-    ax.set_xlim(0, 4)
-    ax.legend(fontsize=9)
-    ax.set_facecolor('#f8f8f8')
-    ax.grid(True, alpha=0.3)
+    ax.set_xlim(-0.1, 4.0)
+    ax.set_xticks([0.0, 0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5])
+    ax.set_ylim(YLIMS_FIG4[metric])
+    ax.legend(fontsize=9, loc='upper right')
+    ax.set_facecolor('#eef2f7')
+    ax.grid(True, alpha=0.4, color='white', linewidth=1.5)
+    ax.spines['top'].set_visible(False)
+    ax.spines['right'].set_visible(False)
 
 plt.suptitle('Figure 4 (Reproduced): Mean morphological metrics vs redshift',
-             fontsize=12, y=1.02)
+             fontsize=12)
 plt.tight_layout()
 plt.savefig('./figure4_reproduce.png', dpi=150, bbox_inches='tight')
 plt.show()
@@ -138,7 +156,7 @@ PAPER_RATIOS = {
 
 rows = []
 for metric in METRICS:
-    real_mean = test_df[metric].dropna().mean()
+    real_mean = test_df[metric].dropna().mean()  # use SEP-extracted test metrics
     gen_mean  = gen_df[metric].dropna().mean()
     ratio     = gen_mean / real_mean if real_mean != 0 else np.nan
     rows.append({
@@ -156,7 +174,7 @@ print("Saved: table1_reproduce.csv")
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# PART 2: COMPARISON WITH PAPER (reproduced vs Andrew)
+# PART 2: COMPARISON WITH PAPER
 # ══════════════════════════════════════════════════════════════════════════════
 
 # ─── Figure 3 comparison: reproduced vs Andrew vs Real ─────────────────────────
@@ -164,7 +182,7 @@ fig, axes = plt.subplots(1, 4, figsize=(16, 4))
 fig.patch.set_facecolor('#f0f0f0')
 
 for ax, metric in zip(axes, METRICS):
-    real_data = orig_test[metric].dropna()
+    real_data = test_df[metric].dropna()  # SEP-extracted, same pipeline as generated
     wy_data   = gen_df[metric].dropna()
     and_data  = andrew_df[metric].dropna()
 
@@ -173,8 +191,8 @@ for ax, metric in zip(axes, METRICS):
 
     ax.hist(real_data, bins=bins, alpha=0.5, color=REAL_COLOR,
             label='Real', density=True)
-    ax.hist(and_data,  bins=bins, alpha=0.6, color=ANDREW_COLOR,
-            label='Andrew (paper)', density=True)
+    ax.hist(and_data,  bins=bins, alpha=0.6, color=PAPER_COLOR,
+            label='Paper', density=True)
     ax.hist(wy_data,   bins=bins, alpha=0.6, color=WY_COLOR,
             label='Reproduce', density=True)
 
@@ -186,7 +204,7 @@ for ax, metric in zip(axes, METRICS):
     ax.set_facecolor('#f8f8f8')
     ax.grid(True, alpha=0.3)
 
-plt.suptitle('Figure 3 Comparison: Reproduce vs Andrew vs Real',
+plt.suptitle('Figure 3 Comparison: Reproduce vs Paper vs Real',
              fontsize=12, y=1.02)
 plt.tight_layout()
 plt.savefig('./figure3_comparison.png', dpi=150, bbox_inches='tight')
@@ -196,23 +214,23 @@ print("Saved: figure3_comparison.png")
 
 # ─── Comparison Table: reproduce vs Andrew (both vs original test set) ──────────
 print("\n" + "="*75)
-print("Comparison Table: Reproduce vs Andrew")
+print("Comparison Table: Reproduce vs Paper")
 print("  Ratio = Generated / Real test set  |  Closer to 1.0 = better")
 print("="*75)
 
 rows2 = []
 for metric in METRICS:
-    orig_mean    = orig_test[metric].dropna().mean()
-    andrew_mean  = andrew_df[metric].dropna().mean()
+    orig_mean    = test_df[metric].dropna().mean()  # SEP-extracted
+    paper_mean   = andrew_df[metric].dropna().mean()
     wy_mean      = gen_df[metric].dropna().mean()
 
-    andrew_ratio = andrew_mean / orig_mean if orig_mean != 0 else np.nan
+    paper_ratio  = paper_mean  / orig_mean if orig_mean != 0 else np.nan
     wy_ratio     = wy_mean     / orig_mean if orig_mean != 0 else np.nan
 
     rows2.append({
         'Metric':          metric,
         'Real mean':       f'{orig_mean:.4f}',
-        'Andrew ratio':    f'{andrew_ratio:.4f}',
+        'Paper ratio':     f'{paper_ratio:.4f}',
         'Reproduce ratio': f'{wy_ratio:.4f}',
         'Paper (σ=0.1)':  f'{PAPER_RATIOS[metric]:.2f}'
     })

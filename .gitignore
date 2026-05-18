@@ -84,3 +84,6 @@ distribute-*.tar.gz
 
 # Mac OSX
 .DS_Store
+37.pdf
+Training/Logs/
+Training/tens_logs/
