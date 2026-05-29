@@ -11,6 +11,7 @@ import scipy.ndimage as ndimage
 import logging
 from tqdm import tqdm
 from scipy.stats import circmean
+from scipy.optimize import curve_fit
 from photutils.isophote import EllipseGeometry, Ellipse
 
 # ─── Paths ─────────────────────────────────────────────────────────────────────
@@ -103,12 +104,54 @@ def analyze_image_with_sep(image, redshift=None, apply_smoothing=True,
                                        sma=semi_major, eps=ellipticity,
                                        pa=obj['theta'])
             ellipse = Ellipse(image_sub, geometry)
+
+            # ── ORIGINAL (kept for reference) ─────────────────────────────────
+            # NOTE: NOT a formal Sersic index — ellipticity-derived heuristic.
+            # Formula: n = ln(2) / ln((1+e)/(1-e))
+            # Supervisor recommendation: replace with proper 1D profile fitting.
             ellipse.fit_image()
-            sersic_n = np.log(2) / np.log((1 + ellipticity) / (1 - ellipticity))
-            result['Sersic Index'] = float(sersic_n)
+            ellipticity_proxy = np.log(2) / np.log((1 + ellipticity) / (1 - ellipticity))
+            result['Ellipticity Proxy'] = float(ellipticity_proxy)
+
+            # ── IMPROVED: proper 1D Sersic fit from isophote radial profile ───
+            # Following supervisor recommendation (see feedback).
+            # Quality cuts: >= 5 converged isophotes, positive intensity.
+            isolist = ellipse.fit_image()
+
+            if len(isolist) >= 5:
+                sma    = np.array(isolist.sma)
+                intens = np.array(isolist.intens)
+
+                # keep only converged isophotes with positive intensity
+                valid  = (isolist.stop_code == 0) & (intens > 0)
+                sma    = sma[valid]
+                intens = intens[valid]
+
+                if len(sma) >= 5:
+                    # Sersic profile: I(r) = I_e * exp(-b_n * ((r/r_e)^(1/n) - 1))
+                    # Linearise, use ln: ln I = ln I_e - b_n * ((r/r_e)^(1/n) - 1)
+                    # Fit simplified form: ln I(r) = A - B * r^(1/n)  (we need A,B n)
+                    def sersic_log(r, A, B, n):
+                        return A - B * r ** (1.0 / n)
+
+                    try:
+                        p0 = [np.log(intens[0]), 1.0, 1.0]
+                        popt, _ = curve_fit(sersic_log, sma, np.log(intens),
+                                            p0=p0, maxfev=2000, 
+                                            bounds=([-np.inf, 0, 0.1], [np.inf, np.inf, 10]))   # fit
+                        sersic_n_fitted = float(popt[2])
+                        result['Sersic Index (fitted)'] = sersic_n_fitted
+                    except Exception:
+                        result['Sersic Index (fitted)'] = np.nan
+                else:
+                    result['Sersic Index (fitted)'] = np.nan
+            else:
+                result['Sersic Index (fitted)'] = np.nan
+
         except Exception as e:
             logging.warning(f"Ellipse fit error: {e}")
-            result['Sersic Index'] = np.nan
+            result['Ellipticity Proxy']    = np.nan
+            result['Sersic Index (fitted)'] = np.nan
 
     return result
 
@@ -126,19 +169,30 @@ def save_results_to_csv(results, csv_path):
     df.to_csv(csv_path, index=False, mode='a', header=header)
 
 
-# ─── Process testing images ────────────────────────────────────────────────────
+# ─── Process testing images (with checkpoint resume) ──────────────────────────
+TEST_CKPT = os.path.join(OUTPUT_DIR, 'test_checkpoint.txt')
+
 print('\n=== Processing real testing images ===')
-if os.path.exists(TEST_CSV):
-    os.remove(TEST_CSV)
+
+# resume from checkpoint if exists
+start_i = 0
+if os.path.exists(TEST_CKPT):
+    with open(TEST_CKPT) as f:
+        start_i = int(f.read().strip())
+    print(f'Resuming from image index {start_i}')
+else:
+    # fresh start: clear CSV
+    if os.path.exists(TEST_CSV):
+        os.remove(TEST_CSV)
 
 with h5py.File(TESTING_HDF5, 'r') as f:
     images_ds   = f['image']
     redshift_ds = f['specz_redshift']
     num_images  = min(images_ds.shape[0], MAX_TEST_IMAGES)
 
-    with tqdm(total=num_images, desc='Testing images') as pbar:
-        for i in range(0, num_images, BATCH_SIZE):
-            img_batch = images_ds[i:i + BATCH_SIZE]  # load pictures by batch
+    with tqdm(total=num_images - start_i, desc='Testing images') as pbar:
+        for i in range(start_i, num_images, BATCH_SIZE):
+            img_batch = images_ds[i:i + BATCH_SIZE]
             z_batch   = redshift_ds[i:i + BATCH_SIZE]
             batch_results = []
             for j, image in enumerate(img_batch):
@@ -151,14 +205,29 @@ with h5py.File(TESTING_HDF5, 'r') as f:
                     logging.error(f"Error image {i+j}: {e}")
                 pbar.update(1)
             save_results_to_csv(batch_results, TEST_CSV)
+            # save checkpoint after each batch
+            with open(TEST_CKPT, 'w') as f:
+                f.write(str(i + BATCH_SIZE))
 
+# done: remove checkpoint
+if os.path.exists(TEST_CKPT):
+    os.remove(TEST_CKPT)
 print(f'Testing metrics saved to {TEST_CSV}')
 
 
-# ─── Process generated images ──────────────────────────────────────────────────
+# ─── Process generated images (with checkpoint resume) ────────────────────────
+GEN_CKPT = os.path.join(OUTPUT_DIR, 'gen_checkpoint.txt')
+
 print('\n=== Processing generated images ===')
-if os.path.exists(GEN_CSV):
-    os.remove(GEN_CSV)
+
+start_gen = 0
+if os.path.exists(GEN_CKPT):
+    with open(GEN_CKPT) as f:
+        start_gen = int(f.read().strip())
+    print(f'Resuming generated images from index {start_gen}')
+else:
+    if os.path.exists(GEN_CSV):
+        os.remove(GEN_CSV)
 
 pt_files = sorted([
     os.path.join(GENERATED_DIR, f)
@@ -168,8 +237,8 @@ pt_files = sorted([
 
 redshifts = np.load(GENERATED_Z_FILE) if os.path.exists(GENERATED_Z_FILE) else [None] * len(pt_files)
 
-with tqdm(total=len(pt_files), desc='Generated images') as pbar:
-    for i in range(0, len(pt_files), BATCH_SIZE):
+with tqdm(total=len(pt_files) - start_gen, desc='Generated images') as pbar:
+    for i in range(start_gen, len(pt_files), BATCH_SIZE):
         batch_files = pt_files[i:i + BATCH_SIZE]
         batch_z     = redshifts[i:i + BATCH_SIZE]
         batch_results = []
@@ -184,6 +253,10 @@ with tqdm(total=len(pt_files), desc='Generated images') as pbar:
                 logging.error(f"Error file {fpath}: {e}")
             pbar.update(1)
         save_results_to_csv(batch_results, GEN_CSV)
+        with open(GEN_CKPT, 'w') as f:
+            f.write(str(i + BATCH_SIZE))
 
+if os.path.exists(GEN_CKPT):
+    os.remove(GEN_CKPT)
 print(f'Generated metrics saved to {GEN_CSV}')
 print('\nDone.')

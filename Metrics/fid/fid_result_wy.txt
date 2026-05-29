@@ -1,0 +1,4 @@
+FID = 3.4434
+Real images: 10048
+Generated images: 10000
+Channels: g, r, i (pseudo-RGB, per Lizarraga et al. 2024)

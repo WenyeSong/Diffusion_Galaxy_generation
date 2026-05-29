@@ -23,7 +23,7 @@ TRAIN_PATH = '/rds/user/ws452/hpc-work/lizarraga_2024/data/5x64x64_training_with
 VAL_PATH   = '/rds/user/ws452/hpc-work/lizarraga_2024/data/5x64x64_validation_with_morphology.hdf5'
 
 MODEL_DIR  = '/rds/user/ws452/hpc-work/lizarraga_2024/cnn_redshift'
-CKPT_PATH  = os.path.join(MODEL_DIR, 'checkpoints/cp.ckpt')
+CKPT_PATH  = os.path.join(MODEL_DIR, 'checkpoints/cp.weights.h5')
 LOG_DIR    = os.path.join(MODEL_DIR, 'logs')
 os.makedirs(os.path.dirname(CKPT_PATH), exist_ok=True)
 os.makedirs(LOG_DIR, exist_ok=True)
