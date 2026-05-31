@@ -8,6 +8,7 @@
 
 import os
 import sys
+import atexit
 
 # Suppress TensorFlow logging
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
@@ -756,7 +757,7 @@ writer = SummaryWriter(tensorboard_log_dir)
 
 tensorboard_port = 6028
 tensorboard_command = [
-    "tensorboard",
+    "/home/ws452/.conda/envs/galaxy/bin/tensorboard",
     f"--logdir={tensorboard_log_dir}",
     f"--port={tensorboard_port}",
     "--bind_all"
@@ -765,7 +766,6 @@ try:
     tensorboard_process = subprocess.Popen(tensorboard_command)
     time.sleep(5)
     print(f"TensorBoard is now running. You can access it at http://localhost:{tensorboard_port}")
-    print(f"TensorBoard is now running. You can access it at http://altair:{tensorboard_port}")
 except Exception as e:
     logger.error(f"Failed to start TensorBoard: {e}")
 
@@ -828,11 +828,14 @@ def cleanup_old_checkpoints(checkpoint_dir, current_epoch, keep_last_n=25):
 # In[ ]:
 
 
+# new changed by wy: early stop
+
 def train(args, lr, ema_decay, train_loader, val_loader, writer,
           label_sigma=0.01,        # redshift perturbation sigma
           early_stop_lr=1e-7,      # stop if LR drops below this
           early_stop_delta=1e-4,   # minimum improvement to count as progress
           early_stop_patience=20): # stop if no progress for this many epochs
+
     logger = logging.getLogger(__name__)
     logger.setLevel(logging.INFO)
     
@@ -863,11 +866,11 @@ def train(args, lr, ema_decay, train_loader, val_loader, writer,
             handler.addFilter(MessageFilter())
     
     device = torch.device(args.device)
-    checkpoint_dir = './Model_Checkpoints_wy_v2'
+    checkpoint_dir = f'./Model_Checkpoints_s{SIGMA_TAG}'   # sigma-specific directory
     os.makedirs(checkpoint_dir, exist_ok=True)
     
     logger.info(f"Starting training, logs will be written to: {writer.log_dir}")
-    logger.info(f"label_sigma={label_sigma}, early_stop_lr={early_stop_lr}, early_stop_patience={early_stop_patience}")
+    logger.info(f"label_sigma={label_sigma}, checkpoint_dir={checkpoint_dir}, early_stop_lr={early_stop_lr}, early_stop_patience={early_stop_patience}")
     
     model = UNet_conditional_conv(c_in=5, c_out=5, y_dim=1).to(device)
     optimizer = torch.optim.AdamW(model.parameters(), lr=lr)

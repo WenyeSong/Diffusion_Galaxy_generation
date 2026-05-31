@@ -1,0 +1,6 @@
+Metric,Real mean,Reproduce mean,Reproduce Ratio,Paper (σ=0.1)
+Ellipticity,0.3070,0.3184,1.0369,0.98
+Semi-major Axis,4.5028,4.0065,0.8898,0.96
+Isophotal Area,536.2602,406.0786,0.7572,0.90
+Ellipticity Proxy,2.0568,1.8437,0.8964,0.93
+Sersic Index (fitted),0.8368,0.7619,0.9105,N/A

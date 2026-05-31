@@ -12,10 +12,10 @@ import matplotlib.pyplot as plt
 from scipy.stats import sem
 
 # ─── Load CSVs ─────────────────────────────────────────────────────────────────
-PAPER_TEST_CSV = './testing_metrics.csv'              # paper Real for Figure 3
-SEP_TEST_CSV   = './testing_images_metrics_wy.csv'   # our SEP Real for Figure 4 (has Redshift)
-GEN_CSV        = './generated_images_metrics_wy.csv'  # our generated images
-ANDREW_CSV     = './AndrewMetrics.csv'                # paper's generated images
+PAPER_TEST_CSV = './testing_metrics.csv'                        # paper Real for Figure 3
+SEP_TEST_CSV   = './testing_images_metrics_wy_fit_sersic.csv'   # our SEP Real for Figure 4
+GEN_CSV        = './generated_images_metrics_wy_fit_sersic.csv' # our generated images
+ANDREW_CSV     = './AndrewMetrics.csv'                           # paper's generated images
 
 paper_test = pd.read_csv(PAPER_TEST_CSV)
 sep_test   = pd.read_csv(SEP_TEST_CSV)
@@ -27,22 +27,39 @@ print(f"SEP Real (testing_images_wy.csv):  {len(sep_test)} images")
 print(f"Our Generated:                     {len(gen_df)} images")
 print(f"Paper Generated (AndrewMetrics):   {len(paper_gen)} images")
 
-METRICS = ['Ellipticity', 'Semi-major Axis', 'Sersic Index', 'Isophotal Area']
+METRICS = ['Ellipticity', 'Semi-major Axis', 'Isophotal Area',
+           'Ellipticity Proxy', 'Sersic Index (fitted)']
+
+# AndrewMetrics uses 'Sersic Index' for what we call 'Ellipticity Proxy'
+ANDREW_MAP = {
+    'Ellipticity':          'Ellipticity',
+    'Semi-major Axis':      'Semi-major Axis',
+    'Isophotal Area':       'Isophotal Area',
+    'Ellipticity Proxy':    'Sersic Index',
+    'Sersic Index (fitted)': None,
+}
 
 XLIMS = {
-    'Ellipticity':     (0, 0.9),
-    'Semi-major Axis': (0, 20),
-    'Sersic Index':    (0, 6),
-    'Isophotal Area':  (0, 2500),
+    'Ellipticity':          (0, 0.9),
+    'Semi-major Axis':      (0, 20),
+    'Isophotal Area':       (0, 2500),
+    'Ellipticity Proxy':    (0, 6),
+    'Sersic Index (fitted)': (0, 6),
+    'Sersic Index':         (0, 6),
 }
+
+import os
+OUT_DIR = './figures_paper_real'
+os.makedirs(OUT_DIR, exist_ok=True)
 
 REAL_COLOR   = '#4575b4'   # blue
 GEN_COLOR    = '#d73027'   # red (our reproduce)
+WY_COLOR     = '#e07b00'   # orange (comparison)
 PAPER_COLOR  = '#1a9641'   # green (paper's generated)
 
 
 # ─── Figure 3A: Paper Real vs Our Reproduce ────────────────────────────────────
-fig, axes = plt.subplots(1, 4, figsize=(16, 4))
+fig, axes = plt.subplots(1, 5, figsize=(20, 4))
 fig.patch.set_facecolor('#f0f0f0')
 
 for ax, metric in zip(axes, METRICS):
@@ -68,13 +85,13 @@ for ax, metric in zip(axes, METRICS):
 plt.suptitle('Figure 3 (Paper Real): Reproduce vs Paper Real test set',
              fontsize=12, y=1.02)
 plt.tight_layout()
-plt.savefig('./figure3_paper_real.png', dpi=150, bbox_inches='tight')
+plt.savefig(os.path.join(OUT_DIR, 'figure3_paper_real.png'), dpi=150, bbox_inches='tight')
 plt.show()
 print("Saved: figure3_paper_real.png")
 
 
 # ─── Figure 3B: Paper Real vs Paper Generated vs Our Reproduce ─────────────────
-fig, axes = plt.subplots(1, 4, figsize=(16, 4))
+fig, axes = plt.subplots(1, 5, figsize=(20, 4))
 fig.patch.set_facecolor('#f0f0f0')
 
 for ax, metric in zip(axes, METRICS):
@@ -103,7 +120,7 @@ for ax, metric in zip(axes, METRICS):
 plt.suptitle('Figure 3 Comparison (Paper Real): Paper Real vs Paper Generated vs Reproduce',
              fontsize=11, y=1.02)
 plt.tight_layout()
-plt.savefig('./figure3_paper_real_comparison.png', dpi=150, bbox_inches='tight')
+plt.savefig(os.path.join(OUT_DIR, 'figure3_paper_real_comparison.png'), dpi=150, bbox_inches='tight')
 plt.show()
 print("Saved: figure3_paper_real_comparison.png")
 
@@ -142,7 +159,7 @@ for metric in METRICS:
 
 table_df = pd.DataFrame(rows)
 print(table_df.to_string(index=False))
-table_df.to_csv('./table1_paper_real.csv', index=False)
+table_df.to_csv(os.path.join(OUT_DIR, 'table1_paper_real.csv'), index=False)
 print("Saved: table1_paper_real.csv")
 
 
@@ -211,7 +228,7 @@ for ax, metric in zip(axes, METRICS):
 plt.suptitle('Figure 4 (Paper Real): Mean morphological metrics vs redshift (±1 std)',
              fontsize=12)
 plt.tight_layout()
-plt.savefig('./figure4_paper_real.png', dpi=150, bbox_inches='tight')
+plt.savefig(os.path.join(OUT_DIR, 'figure4_paper_real.png'), dpi=150, bbox_inches='tight')
 plt.show()
 print("Saved: figure4_paper_real.png")
 print("\nDone.")
