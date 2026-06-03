@@ -1,5 +1,6 @@
 import sys
 import os
+import argparse
 sys.path.append('/rds/user/ws452/hpc-work/lizarraga_2024/code')
 
 import torch
@@ -14,19 +15,39 @@ from scipy.stats import circmean
 from scipy.optimize import curve_fit
 from photutils.isophote import EllipseGeometry, Ellipse
 
+# ─── Sigma argument ────────────────────────────────────────────────────────────
+parser = argparse.ArgumentParser()
+parser.add_argument('--sigma',     default='',  help='sigma tag: 01 / 05 / 10')
+parser.add_argument('--chunk',     type=int, default=0,     help='chunk index (0-based)')
+parser.add_argument('--n_chunks',  type=int, default=1,     help='total number of chunks')
+parser.add_argument('--skip_test', action='store_true',     help='skip test-set evaluation')
+args = parser.parse_args()
+SIGMA_TAG = args.sigma
+CHUNK     = args.chunk
+N_CHUNKS  = args.n_chunks
+suffix    = f'_s{SIGMA_TAG}' if SIGMA_TAG else ''
+
 # ─── Paths ─────────────────────────────────────────────────────────────────────
-TESTING_HDF5       = '/rds/user/ws452/hpc-work/lizarraga_2024/data/5x64x64_testing_with_morphology.hdf5'
-GENERATED_DIR      = '/rds/user/ws452/hpc-work/lizarraga_2024/generated_images'
-GENERATED_Z_FILE   = os.path.join(GENERATED_DIR, 'generated_redshifts.npy')
-OUTPUT_DIR         = '/rds/user/ws452/hpc-work/lizarraga_2024/eval_output'
+BASE             = '/rds/user/ws452/hpc-work/lizarraga_2024'
+TESTING_HDF5     = os.path.join(BASE, 'data/5x64x64_testing_with_morphology.hdf5')
+GENERATED_DIR    = os.path.join(BASE, f'generated_images{suffix}')
+GENERATED_Z_FILE = os.path.join(GENERATED_DIR, 'generated_redshifts.npy')
+OUTPUT_DIR       = os.path.join(BASE, f'eval_output{suffix}')
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 
-TEST_CSV      = os.path.join(OUTPUT_DIR, 'testing_images_metrics.csv')
-GEN_CSV       = os.path.join(OUTPUT_DIR, 'generated_images_metrics.csv')
+# chunk-specific output CSVs; merged later by merge_eval.py
+TEST_CSV  = os.path.join(BASE, 'eval_output', 'testing_images_metrics.csv')
+GEN_CSV   = os.path.join(OUTPUT_DIR, f'generated_metrics_chunk{CHUNK}.csv')
+print(f"sigma={SIGMA_TAG!r}  chunk={CHUNK}/{N_CHUNKS}  GEN_CSV={GEN_CSV}")
 
 BATCH_SIZE        = 100
-MAX_TEST_IMAGES   = 40914   # full test set (matches paper)
-MAX_GEN_IMAGES    = 10000   # number of generated images
+MAX_TEST_IMAGES   = 40914
+MAX_GEN_IMAGES    = 10000
+# chunk range for generated images
+GEN_CHUNK_SIZE = MAX_GEN_IMAGES // N_CHUNKS
+GEN_START      = CHUNK * GEN_CHUNK_SIZE
+GEN_END        = GEN_START + GEN_CHUNK_SIZE if CHUNK < N_CHUNKS - 1 else MAX_GEN_IMAGES
+print(f"Generated images range: {GEN_START} – {GEN_END}")
 
 # ─── Logging ───────────────────────────────────────────────────────────────────
 logging.basicConfig(

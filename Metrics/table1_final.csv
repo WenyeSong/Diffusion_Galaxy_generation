@@ -1,0 +1,5 @@
+Metric,Repro score,Paper score,Paper stated,Repro/Paper
+Ellipticity Proxy (Sersic in paper),0.9149,0.7327,0.93,0.995
+Ellipticity,0.9677,0.7102,0.98,0.9806
+Semi-major Axis,0.8784,0.7182,0.96,1.0098
+Isophotal Area,0.7398,0.5856,0.9,0.998

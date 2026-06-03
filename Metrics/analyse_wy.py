@@ -52,6 +52,35 @@ PAPER_RATIOS = {
     'Sersic Index (fitted)': None,
 }
 
+# ══════════════════════════════════════════════════════════════════════════════
+# VERIFICATION: re-compute paper's Table 1 from their own CSVs
+# score = mean(AndrewMetrics) / mean(testing_metrics)  ← paper's formula
+# ══════════════════════════════════════════════════════════════════════════════
+print("\n" + "="*70)
+print("VERIFICATION: Paper Table 1 — recomputed from AndrewMetrics.csv / testing_metrics.csv")
+print("  (score = mean_generated / mean_real_test, closer to 1 = better)")
+print("="*70)
+
+# Column mapping: our metric name → column in testing_metrics.csv / AndrewMetrics.csv
+PAPER_COL_MAP = {
+    'Ellipticity':     ('Ellipticity',   'Ellipticity'),
+    'Semi-major Axis': ('Semi-major Axis','Semi-major Axis'),
+    'Isophotal Area':  ('Isophotal Area', 'Isophotal Area'),
+    'Sersic Index':    ('Sersic Index',   'Sersic Index'),   # both CSVs use this name
+}
+
+print(f"\n{'Metric':<20} {'Real mean':>12} {'Gen mean':>12} {'Computed ratio':>16} {'Paper Table1':>13} {'Match?':>8}")
+print("-" * 75)
+for metric, (test_col, gen_col) in PAPER_COL_MAP.items():
+    real_mean = orig_test[test_col].dropna().mean()  if test_col in orig_test.columns  else float('nan')
+    gen_mean  = andrew_df[gen_col].dropna().mean()   if gen_col  in andrew_df.columns  else float('nan')
+    ratio     = gen_mean / real_mean if real_mean > 0 else float('nan')
+    paper_val = PAPER_RATIOS.get(metric if metric != 'Sersic Index' else 'Ellipticity Proxy', float('nan'))
+    match     = '✓' if paper_val and abs(ratio - paper_val) < 0.02 else '✗'
+    print(f"{metric:<20} {real_mean:>12.4f} {gen_mean:>12.4f} {ratio:>16.4f} {str(paper_val):>13} {match:>8}")
+
+print("\nNote: 'Match?' uses ±0.02 tolerance. Mismatch may mean different CSV versions or rounding.")
+
 XLIMS = {
     'Ellipticity':          (0, 0.9),
     'Semi-major Axis':      (0, 20),

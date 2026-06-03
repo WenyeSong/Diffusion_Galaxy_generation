@@ -39,6 +39,15 @@ ANDREW_MAP = {
     'Sersic Index (fitted)': None,
 }
 
+# testing_metrics.csv column mapping (HSC catalog, different column names)
+PAPER_TEST_MAP = {
+    'Ellipticity':          'Ellipticity',
+    'Semi-major Axis':      'Semi-major Axis',
+    'Isophotal Area':       'Isophotal Area',
+    'Ellipticity Proxy':    'Sersic Index',   # same formula, different name
+    'Sersic Index (fitted)': None,            # not available in catalog
+}
+
 XLIMS = {
     'Ellipticity':          (0, 0.9),
     'Semi-major Axis':      (0, 20),
@@ -49,13 +58,13 @@ XLIMS = {
 }
 
 import os
-OUT_DIR = './figures_paper_real'
+OUT_DIR = './evaluation_fitted_sersic_with_repo_test'
 os.makedirs(OUT_DIR, exist_ok=True)
 
-REAL_COLOR   = '#4575b4'   # blue
-GEN_COLOR    = '#d73027'   # red (our reproduce)
-WY_COLOR     = '#e07b00'   # orange (comparison)
-PAPER_COLOR  = '#1a9641'   # green (paper's generated)
+REAL_COLOR   = '#3717ec'   # blue
+GEN_COLOR    = '#fa4b54'   # red (our reproduce)
+WY_COLOR     = '#fa4b54'   # same red (comparison)
+PAPER_COLOR  = '#F1D682'   # yellow (paper's generated)
 
 
 # ─── Figure 3A: Paper Real vs Our Reproduce ────────────────────────────────────
@@ -63,15 +72,17 @@ fig, axes = plt.subplots(1, 5, figsize=(20, 4))
 fig.patch.set_facecolor('#f0f0f0')
 
 for ax, metric in zip(axes, METRICS):
-    real_data = paper_test[metric].dropna()
+    paper_col = PAPER_TEST_MAP.get(metric)
     gen_data  = gen_df[metric].dropna()
 
     xmin, xmax = XLIMS[metric]
     bins = np.linspace(xmin, xmax, 50)
 
-    ax.hist(real_data, bins=bins, alpha=0.7, color=REAL_COLOR,
-            label='Real (paper test)', density=True)
-    ax.hist(gen_data,  bins=bins, alpha=0.7, color=GEN_COLOR,
+    if paper_col and paper_col in paper_test.columns:
+        real_data = paper_test[paper_col].dropna()
+        ax.hist(real_data, bins=bins, alpha=0.7, color=REAL_COLOR,
+                label='Real (paper test)', density=True)
+    ax.hist(gen_data, bins=bins, alpha=0.7, color=GEN_COLOR,
             label='Reproduce', density=True)
 
     ax.set_yscale('log')
@@ -95,18 +106,22 @@ fig, axes = plt.subplots(1, 5, figsize=(20, 4))
 fig.patch.set_facecolor('#f0f0f0')
 
 for ax, metric in zip(axes, METRICS):
-    real_data  = paper_test[metric].dropna()
-    paper_data = paper_gen[metric].dropna()
+    paper_col  = PAPER_TEST_MAP.get(metric)
+    andrew_col = ANDREW_MAP.get(metric)
     gen_data   = gen_df[metric].dropna()
 
     xmin, xmax = XLIMS[metric]
     bins = np.linspace(xmin, xmax, 50)
 
-    ax.hist(real_data,  bins=bins, alpha=0.5, color=REAL_COLOR,
-            label='Real (paper test)', density=True)
-    ax.hist(paper_data, bins=bins, alpha=0.6, color=PAPER_COLOR,
-            label='Paper Generated', density=True)
-    ax.hist(gen_data,   bins=bins, alpha=0.6, color=GEN_COLOR,
+    if paper_col and paper_col in paper_test.columns:
+        real_data = paper_test[paper_col].dropna()
+        ax.hist(real_data, bins=bins, alpha=0.5, color=REAL_COLOR,
+                label='Real (paper test)', density=True)
+    if andrew_col and andrew_col in paper_gen.columns:
+        paper_data = paper_gen[andrew_col].dropna()
+        ax.hist(paper_data, bins=bins, alpha=0.6, color=PAPER_COLOR,
+                label='Paper Generated', density=True)
+    ax.hist(gen_data, bins=bins, alpha=0.6, color=GEN_COLOR,
             label='Reproduce', density=True)
 
     ax.set_yscale('log')
@@ -140,12 +155,15 @@ PAPER_RATIOS = {
 
 rows = []
 for metric in METRICS:
-    real_mean  = paper_test[metric].dropna().mean()
-    paper_mean = paper_gen[metric].dropna().mean()
+    paper_col  = PAPER_TEST_MAP.get(metric)
+    andrew_col = ANDREW_MAP.get(metric)
+
+    real_mean  = paper_test[paper_col].dropna().mean() if paper_col and paper_col in paper_test.columns else np.nan
+    paper_mean = paper_gen[andrew_col].dropna().mean() if andrew_col and andrew_col in paper_gen.columns else np.nan
     wy_mean    = gen_df[metric].dropna().mean()
 
-    paper_ratio = paper_mean / real_mean if real_mean != 0 else np.nan
-    wy_ratio    = wy_mean    / real_mean if real_mean != 0 else np.nan
+    paper_ratio = paper_mean / real_mean if not np.isnan(real_mean) and real_mean != 0 else np.nan
+    wy_ratio    = wy_mean    / real_mean if not np.isnan(real_mean) and real_mean != 0 else np.nan
 
     rows.append({
         'Metric':            metric,

@@ -16,14 +16,20 @@ import os
 from tqdm import tqdm
 from scipy.linalg import sqrtm
 
-# ─── Paths ─────────────────────────────────────────────────────────────────────
-# TEST_HDF5 = '/Users/wen/Desktop/project/archive/5x64x64_testing_with_morphology.hdf5'
-# GEN_DIR   = '/Users/wen/Desktop/project/lizarraga_2024-main/generated_images'
+# ─── Sigma argument ────────────────────────────────────────────────────────────
+import argparse, sys
+parser = argparse.ArgumentParser()
+parser.add_argument('--sigma', default='', help='sigma tag: 01 / 05 / 10')
+args = parser.parse_args()
+SIGMA_TAG = args.sigma
+suffix = f'_s{SIGMA_TAG}' if SIGMA_TAG else ''
 
-# csd3:
-TEST_HDF5 = '/rds/user/ws452/hpc-work/lizarraga_2024/data/5x64x64_testing_with_morphology.hdf5'
-GEN_DIR   = '/rds/user/ws452/hpc-work/lizarraga_2024/generated_images'
-FID_DIR   = '/rds/user/ws452/hpc-work/lizarraga_2024/fid_output'
+# ─── Paths ─────────────────────────────────────────────────────────────────────
+BASE      = '/rds/user/ws452/hpc-work/lizarraga_2024'
+TEST_HDF5 = os.path.join(BASE, 'data/5x64x64_testing_with_morphology.hdf5')
+GEN_DIR   = os.path.join(BASE, f'generated_images{suffix}')
+FID_DIR   = os.path.join(BASE, f'fid_output{suffix}')
+print(f"sigma_tag={SIGMA_TAG!r}  GEN_DIR={GEN_DIR}")
 
 
 NUM_REAL_IMAGES = 40914  # full test set (matches paper)
