@@ -7,6 +7,14 @@
 *.hdf5
 *.h5
 *.pt
+*.npz
+
+# CNN predictor outputs — ignore intermediate checkpoints, keep best
+CNN_physical_paras_predictor/checkpoints/
+!CNN_physical_paras_predictor/checkpoints/best.pt
+
+# CNN redshift — keep best model too
+!CNN_Redshift/model_output/best.pt
 
 # Model checkpoints and logs
 Training/Model_Checkpoints_wy/

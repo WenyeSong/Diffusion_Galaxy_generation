@@ -1,0 +1,22 @@
+{
+  "i_ellipticity": {
+    "transform": "none",
+    "mean": 0.24246655553545857,
+    "std": 0.17124118447446177
+  },
+  "i_major_axis": {
+    "transform": "log1p",
+    "mean": 1.8204261997272857,
+    "std": 0.5198968446007793
+  },
+  "i_sersic_index": {
+    "transform": "log",
+    "mean": 0.48267845506964413,
+    "std": 0.5787331300800834
+  },
+  "i_isophotal_area": {
+    "transform": "log",
+    "mean": 6.210077355005249,
+    "std": 1.2726247994554443
+  }
+}
