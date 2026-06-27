@@ -1,22 +1,22 @@
 {
-  "i_ellipticity": {
+  "g_ellipticity": {
     "transform": "none",
-    "mean": 0.24246655553545857,
-    "std": 0.17124118447446177
+    "mean": 0.23008012950618434,
+    "std": 0.17184272303693976
   },
-  "i_major_axis": {
+  "g_major_axis": {
     "transform": "log1p",
-    "mean": 1.8204261997272857,
-    "std": 0.5198968446007793
+    "mean": 1.7202980265002934,
+    "std": 0.5368854217695195
   },
-  "i_sersic_index": {
+  "g_sersic_index": {
     "transform": "log",
-    "mean": 0.48267845506964413,
-    "std": 0.5787331300800834
+    "mean": 0.1788400641106982,
+    "std": 0.5016417272844769
   },
-  "i_isophotal_area": {
+  "g_isophotal_area": {
     "transform": "log",
-    "mean": 6.210077355005249,
-    "std": 1.2726247994554443
+    "mean": 5.735686333752821,
+    "std": 1.3523462871668945
   }
 }

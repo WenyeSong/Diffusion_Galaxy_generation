@@ -11,7 +11,7 @@ PY=/home/ws452/.conda/envs/galaxy/bin/python
 CODE=/rds/user/ws452/hpc-work/lizarraga_2024/code
 
 echo "=== eval s${SIGMA} chunk=${SLURM_ARRAY_TASK_ID}/4 ==="
-$PY $CODE/Evaluate/evaluate_wy.py \
+$PY $CODE/Generate/evaluate_wy.py \
     --sigma ${SIGMA} \
     --chunk ${SLURM_ARRAY_TASK_ID} \
     --n_chunks 4 \

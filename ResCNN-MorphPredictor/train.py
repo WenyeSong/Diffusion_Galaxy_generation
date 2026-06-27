@@ -29,7 +29,7 @@ HDF5_FILES = {
     "val"  : os.path.join(DATA_DIR, "5x64x64_validation_with_morphology.hdf5"),
 }
 
-TARGET_COLS = ["i_ellipticity", "i_major_axis", "i_sersic_index", "i_isophotal_area"]
+TARGET_COLS = ["g_ellipticity", "g_major_axis", "g_sersic_index", "g_isophotal_area"]
 
 EPOCHS     = 20
 BATCH_SIZE = 128

@@ -250,13 +250,17 @@ else:
     if os.path.exists(GEN_CSV):
         os.remove(GEN_CSV)
 
-pt_files = sorted([
+all_pt_files = sorted([
     os.path.join(GENERATED_DIR, f)
     for f in os.listdir(GENERATED_DIR)
     if f.endswith('.pt') and f.startswith('generated_image_')
 ])[:MAX_GEN_IMAGES]
 
-redshifts = np.load(GENERATED_Z_FILE) if os.path.exists(GENERATED_Z_FILE) else [None] * len(pt_files)
+# Slice to this chunk's range
+pt_files  = all_pt_files[GEN_START:GEN_END]
+all_redshifts = np.load(GENERATED_Z_FILE) if os.path.exists(GENERATED_Z_FILE) else [None] * len(all_pt_files)
+redshifts = all_redshifts[GEN_START:GEN_END]
+print(f"This chunk processes {len(pt_files)} generated images (indices {GEN_START}–{GEN_END})")
 
 with tqdm(total=len(pt_files) - start_gen, desc='Generated images') as pbar:
     for i in range(start_gen, len(pt_files), BATCH_SIZE):
