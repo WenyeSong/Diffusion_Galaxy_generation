@@ -98,7 +98,23 @@ def compute_sersic(image, apply_smoothing=True, sigma=1.5):
     except Exception:
         result['Ellipticity Proxy'] = np.nan
 
-    # Proper 1D Sersic fit from isophote radial profile
+    # Proper 1D Sersic fit from isophote radial profile.
+    #
+    # Method:
+    #   Step 1 — photutils fits a series of elliptical isophotes to the
+    #            background-subtracted image, growing the semi-major axis (sma)
+    #            outward from the SEP-detected ellipse geometry. Each isophote
+    #            returns the mean intensity along that ellipse.
+    #
+    #   Step 2 — the Sersic profile in log-space is:
+    #              log I(r) = A - B * r^(1/n)
+    #            where n is the Sersic index (n=1 → exponential disc,
+    #            n=4 → de Vaucouleurs elliptical), A = log I_e + b_n,
+    #            and B = b_n / r_e^(1/n).
+    #
+    #   Step 3 — scipy curve_fit minimises the residuals of this log-linear
+    #            model over the isophote (sma, intens) pairs, returning n.
+    #            Bounds restrict n to [0.1, 10] to avoid unphysical values.
     try:
         geometry = EllipseGeometry(x0=obj['x'], y0=obj['y'],
                                    sma=semi_major, eps=ellipticity,
@@ -109,19 +125,20 @@ def compute_sersic(image, apply_smoothing=True, sigma=1.5):
         if len(isolist) >= 5:
             sma    = np.array(isolist.sma)
             intens = np.array(isolist.intens)
-            valid  = (isolist.stop_code == 0) & (intens > 0)
+            valid  = (isolist.stop_code == 0) & (intens > 0)  # keep only converged isophotes with positive flux
             sma    = sma[valid]
             intens = intens[valid]
 
             if len(sma) >= 5:
                 def sersic_log(r, A, B, n):
+                    # linearised Sersic: log I = A - B * r^(1/n)
                     return A - B * r ** (1.0 / n)
 
-                p0   = [np.log(intens[0]), 1.0, 1.0]
+                p0   = [np.log(intens[0]), 1.0, 1.0]  # initial guess: A from peak intensity, B=1, n=1
                 popt, _ = curve_fit(sersic_log, sma, np.log(intens),
                                     p0=p0, maxfev=2000,
                                     bounds=([-np.inf, 0, 0.1], [np.inf, np.inf, 10]))
-                result['Sersic Index (fitted)'] = float(popt[2])
+                result['Sersic Index (fitted)'] = float(popt[2])  # popt[2] is the fitted n
             else:
                 result['Sersic Index (fitted)'] = np.nan
         else:
