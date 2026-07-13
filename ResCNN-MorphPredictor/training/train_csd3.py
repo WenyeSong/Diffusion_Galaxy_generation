@@ -50,7 +50,7 @@ if DEVICE == "cuda":
 
 
 # ── normaliser ────────────────────────────────────────────────────────────
-with open(os.path.join(HERE, "..", "normaliser.json")) as fp:
+with open(os.path.join(HERE, "..", "stats/normaliser.json")) as fp:
     NORM = json.load(fp)
 
 def normalise_labels(vals):
@@ -77,7 +77,7 @@ def denormalise(arr):
 
 
 # ── image stats ────────────────────────────────────────────────────────────
-STATS_FILE = os.path.join(HERE, "..", "image_stats.json")
+STATS_FILE = os.path.join(HERE, "..", "stats/image_stats.json")
 
 def load_split(hdf5_path, indices, desc=""):
     n = len(indices)
@@ -96,8 +96,8 @@ def load_split(hdf5_path, indices, desc=""):
 
 
 # ── load data ──────────────────────────────────────────────────────────────
-train_idx = np.load(os.path.join(HERE, "..", "data/indices_train.npy"))
-val_idx   = np.load(os.path.join(HERE, "..", "data/indices_val.npy"))
+train_idx = np.load(os.path.join(HERE, "..", "data_indices/indices_train.npy"))
+val_idx   = np.load(os.path.join(HERE, "..", "data_indices/indices_val.npy"))
 
 train_imgs, train_lbls = load_split(HDF5_FILES["train"], train_idx, "train")
 val_imgs,   val_lbls   = load_split(HDF5_FILES["val"],   val_idx,   "val")

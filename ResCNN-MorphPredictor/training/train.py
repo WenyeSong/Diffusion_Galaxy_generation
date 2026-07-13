@@ -44,7 +44,7 @@ os.makedirs(CKPT_DIR, exist_ok=True)
 
 
 # ── Normaliser ─────────────────────────────────────────────────────────────
-with open(os.path.join(HERE, "..", "normaliser.json")) as fp:
+with open(os.path.join(HERE, "..", "stats/normaliser.json")) as fp:
     NORM = json.load(fp)
 
 def normalise(arr_dict):
@@ -102,7 +102,7 @@ class GalaxyDataset(Dataset):
 # ── Image preprocessing ────────────────────────────────────────────────────
 # Per-channel asinh stretch + standardise using training-set statistics.
 # We compute channel stats lazily from a small sample if not cached.
-STATS_FILE = os.path.join(HERE, "..", "image_stats.json")
+STATS_FILE = os.path.join(HERE, "..", "stats/image_stats.json")
 
 def compute_image_stats(hdf5_path, indices, n_sample=2000):
     rng = np.random.default_rng(0)
@@ -166,8 +166,8 @@ def main():
     print(f"Device: {DEVICE}")
 
     # --- load / compute image stats ---
-    train_idx = np.load(os.path.join(HERE, "..", "data/indices_train.npy"))
-    val_idx   = np.load(os.path.join(HERE, "..", "data/indices_val.npy"))
+    train_idx = np.load(os.path.join(HERE, "..", "data_indices/indices_train.npy"))
+    val_idx   = np.load(os.path.join(HERE, "..", "data_indices/indices_val.npy"))
 
     img_stats = load_image_stats()
     if img_stats is None:

@@ -37,8 +37,8 @@ HDF5 = {
     "val"  : os.path.join(DATA_DIR, "5x64x64_validation_with_morphology.hdf5"),
 }
 IDX_FILES = {
-    "train": os.path.join(HERE, "data/indices_train.npy"),
-    "val"  : os.path.join(HERE, "data/indices_val.npy"),
+    "train": os.path.join(HERE, "data_indices/indices_train.npy"),
+    "val"  : os.path.join(HERE, "data_indices/indices_val.npy"),
 }
 
 # Band order confirmed from step1_data_exploration.ipynb: g=0, r=1, i=2, z=3, y=4

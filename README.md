@@ -1,4 +1,5 @@
-# Reproduction of Galaxy Diffusion Model
+# Galaxy Morphology Evolution via Redshift-Conditioned Diffusion Models:
+# Generation and Physical Evaluation
 
 This repository is a reproduction and extension of the paper:
 

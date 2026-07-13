@@ -88,7 +88,7 @@ val_df   = load_sep_csv("val")
 
 
 # ── build normaliser from training SEP labels ─────────────────────────────────
-NORM_FILE = os.path.join(HERE, "..", "normaliser_sep.json")
+NORM_FILE = os.path.join(HERE, "..", "stats/normaliser_sep.json")
 
 def build_normaliser(df):
     norm = {}
@@ -140,7 +140,7 @@ def denormalise(arr):
 
 
 # ── load images from HDF5 ─────────────────────────────────────────────────────
-STATS_FILE = os.path.join(HERE, "..", "image_stats.json")
+STATS_FILE = os.path.join(HERE, "..", "stats/image_stats.json")
 
 def load_images_and_labels(hdf5_path, df, desc=""):
     hdf5_idx = df["hdf5_index"].values.astype(int)
