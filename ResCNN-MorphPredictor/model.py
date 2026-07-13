@@ -21,7 +21,7 @@ class ResBlock(nn.Module):
         self.relu = nn.ReLU(inplace=True)
 
     def forward(self, x):
-        return self.relu(x + self.block(x))
+        return self.relu(x + self.block(x))  # residual connection, skip connection
 
 
 class MorphCNN(nn.Module):

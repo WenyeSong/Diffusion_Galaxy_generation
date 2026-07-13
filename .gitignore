@@ -95,8 +95,8 @@ distribute-*.tar.gz
 .pydevproject
 .settings
 
-# Mac OSX
 .DS_Store
-37.pdf
 Training/Logs/
 Training/tens_logs/
+37.pdf
+37with_note.pdf

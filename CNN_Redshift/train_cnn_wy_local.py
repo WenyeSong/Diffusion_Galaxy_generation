@@ -79,6 +79,13 @@ class HDF5Generator(tf.keras.utils.Sequence):
 
 
 # ─── Loss function (HSC metric) ───────────────────────────────────────────────
+# HSC photometric redshift loss (Nishizawa et al. 2020):
+#
+#   L(z_spec, z_photo) = 1 - 1 / (1 + (dz / gamma)^2)
+#
+# where dz = z_photo - z_spec and gamma = 0.15.
+# This loss is bounded in [0, 1] and is less sensitive to large outliers
+# than MSE, which suits photometric redshift estimation well.
 def hsc_loss(z_spec, z_photo):
     dz    = z_photo - z_spec
     gamma = 0.15

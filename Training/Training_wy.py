@@ -115,7 +115,7 @@ def set_random_seed(seed):
     # Set seed for PyTorch
     torch.manual_seed(seed)
     
-    # If you are using CUDA
+    # If using CUDA
     if torch.cuda.is_available():
         torch.cuda.manual_seed(seed)
         torch.cuda.manual_seed_all(seed)  # if you are using multi-GPU.

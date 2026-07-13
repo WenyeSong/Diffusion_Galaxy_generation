@@ -248,7 +248,7 @@ def main():
     ax.set_title("Training curve")
     ax.legend()
     plt.tight_layout()
-    plt.savefig(os.path.join(HERE, "loss_curve.png"), dpi=110)
+    plt.savefig(os.path.join(HERE, "figures/loss_curve.png"), dpi=110)
     print(f"\nDone. Best val loss: {best_val:.5f}")
     print(f"Loss curve saved to loss_curve.png")
 

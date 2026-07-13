@@ -97,7 +97,7 @@ def analyze_image_with_sep(image, redshift=None, apply_smoothing=True,
         return None
 
     try:
-        objects = sep.extract(image_sub, 1.5, err=bkg.globalrms)
+        objects = sep.extract(image_sub, 1.5, err=bkg.globalrms)  # extract source from image, only larger than 1.5 sigma can be source
     except Exception as e:
         logging.warning(f"SEP extract error: {e}")
         return None
@@ -105,7 +105,7 @@ def analyze_image_with_sep(image, redshift=None, apply_smoothing=True,
     if len(objects) == 0:
         return None
 
-    obj = objects[0]
+    obj = objects[0]   #  extract the 1st source, highest lightness 
     semi_major = obj['a']
     semi_minor = obj['b']
     ellipticity = 1 - (semi_minor / semi_major)
@@ -113,8 +113,8 @@ def analyze_image_with_sep(image, redshift=None, apply_smoothing=True,
     result['Semi-major Axis']    = float(semi_major)
     result['Semi-minor Axis']    = float(semi_minor)
     result['Ellipticity']        = float(ellipticity)
-    result['Orientation Angle']  = float(obj['theta'])
-    result['Isophotal Area']     = float(obj['npix'])
+    result['Orientation Angle']  = float(obj['theta'])  # angle of major axis
+    result['Isophotal Area']     = float(obj['npix'])   #  number of pixel of the source
 
     if redshift is not None:
         result['Redshift'] = float(redshift)
