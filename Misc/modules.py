@@ -1,4 +1,28 @@
-import copy 
+"""
+Neural network building blocks for the redshift-conditioned DDPM.
+
+Classes
+-------
+EMA                    Exponential Moving Average wrapper — maintains a shadow
+                       copy of model weights updated as a running average to
+                       reduce training noise and improve generation quality.
+SelfAttention          Multi-head self-attention block inserted at the UNet
+                       bottleneck to capture long-range spatial dependencies.
+DoubleConv             Two consecutive 3×3 conv layers (basic UNet unit).
+Down                   Downsampling block: MaxPool → DoubleConv, injects the
+                       sinusoidal time embedding (+ redshift embedding) as a
+                       channel-wise bias.
+Up                     Upsampling block: bilinear upsample → DoubleConv with
+                       skip connection from the encoder, same time injection.
+UNet_conditional_conv  Full conditional UNet used as the DDPM denoiser.
+                       Redshift z is embedded via a linear layer and added to
+                       the sinusoidal time encoding so every layer is conditioned
+                       on both diffusion timestep and target redshift.
+CosineWarmupScheduler  Learning-rate scheduler: linear warmup for the first
+                       `warmup_epochs` epochs, then cosine annealing to min_lr.
+"""
+
+import copy
 import torch
 import torch.nn as nn
 import torch.nn.functional as F

@@ -10,7 +10,7 @@ Outputs written to the same directory as this script:
     loss_curve.png
 """
 
-import os, json, time, glob
+import os, sys, json, time, glob
 import numpy as np
 import h5py
 import torch
@@ -20,6 +20,7 @@ import matplotlib
 matplotlib.use("Agg")   # no display on HPC
 import matplotlib.pyplot as plt
 
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from model import MorphCNN
 
 # ── paths ─────────────────────────────────────────────────────────────────
@@ -31,7 +32,7 @@ HDF5_FILES = {
     "val"  : os.path.join(DATA_DIR, "5x64x64_validation_with_morphology.hdf5"),
 }
 
-CKPT_DIR = os.path.join(HERE, "checkpoints")
+CKPT_DIR = os.path.join(HERE, "..", "checkpoints")
 os.makedirs(CKPT_DIR, exist_ok=True)
 
 # ── hyperparameters ────────────────────────────────────────────────────────
@@ -49,7 +50,7 @@ if DEVICE == "cuda":
 
 
 # ── normaliser ────────────────────────────────────────────────────────────
-with open(os.path.join(HERE, "normaliser.json")) as fp:
+with open(os.path.join(HERE, "..", "normaliser.json")) as fp:
     NORM = json.load(fp)
 
 def normalise_labels(vals):
@@ -76,7 +77,7 @@ def denormalise(arr):
 
 
 # ── image stats ────────────────────────────────────────────────────────────
-STATS_FILE = os.path.join(HERE, "image_stats.json")
+STATS_FILE = os.path.join(HERE, "..", "image_stats.json")
 
 def load_split(hdf5_path, indices, desc=""):
     n = len(indices)
@@ -95,8 +96,8 @@ def load_split(hdf5_path, indices, desc=""):
 
 
 # ── load data ──────────────────────────────────────────────────────────────
-train_idx = np.load(os.path.join(HERE, "indices_train.npy"))
-val_idx   = np.load(os.path.join(HERE, "indices_val.npy"))
+train_idx = np.load(os.path.join(HERE, "..", "data/indices_train.npy"))
+val_idx   = np.load(os.path.join(HERE, "..", "data/indices_val.npy"))
 
 train_imgs, train_lbls = load_split(HDF5_FILES["train"], train_idx, "train")
 val_imgs,   val_lbls   = load_split(HDF5_FILES["val"],   val_idx,   "val")
@@ -217,6 +218,6 @@ ax.set_xlabel("Epoch"); ax.set_ylabel("Huber Loss")
 ax.set_title("ResCNN MorphPredictor — training curve (g-band, CSD3)")
 ax.legend(); ax.grid(True, alpha=0.3)
 plt.tight_layout()
-plt.savefig(os.path.join(HERE, "figures/loss_curve.png"), dpi=110)
+plt.savefig(os.path.join(HERE, "..", "figures/loss_curve.png"), dpi=110)
 print(f"\nDone. Best val loss: {best_val:.5f}")
 print("Saved loss_curve.png")

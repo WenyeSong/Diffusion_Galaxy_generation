@@ -25,10 +25,10 @@ Training/Logs_wy/
 Training/Logs_wy_v2/
 
 # Large CSV files
-Metrics/AndrewMetrics.csv
-Metrics/testing_metrics.csv
-Metrics/generated_images_metrics_wy.csv
-Metrics/testing_images_metrics_wy.csv
+Metrics/results/AndrewMetrics.csv
+Metrics/results/testing_metrics.csv
+Metrics/results/generated_images_metrics_wy.csv
+Metrics/results/testing_images_metrics_wy.csv
 
 # Compiled files
 *.py[cod]
@@ -102,3 +102,10 @@ Training/tens_logs/
 37with_note.pdf
 report.tex
 references.bib
+
+# ResCNN-MorphPredictor: regenerable inference outputs
+ResCNN-MorphPredictor/gen_preds*.npy
+ResCNN-MorphPredictor/test_preds.npy
+ResCNN-MorphPredictor/test_true.npy
+ResCNN-MorphPredictor/inference_cache.npz
+ResCNN-MorphPredictor/make_arch.py

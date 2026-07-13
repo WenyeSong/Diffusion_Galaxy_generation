@@ -13,4 +13,4 @@
 
 cd /rds/user/ws452/hpc-work/lizarraga_2024/code/ResCNN-MorphPredictor
 
-/home/ws452/.conda/envs/galaxy/bin/python train_sep_csd3.py
+/home/ws452/.conda/envs/galaxy/bin/python training/train_sep_csd3.py

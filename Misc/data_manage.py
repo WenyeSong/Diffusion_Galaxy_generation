@@ -1,3 +1,15 @@
+"""
+PyTorch Dataset wrapper for HDF5 galaxy image files.
+
+HDF5ImageGenerator streams images and labels directly from an HDF5 file one
+batch at a time, so the full dataset never needs to be loaded into memory.
+Used by the DDPM training pipeline (Training_wy.py / Training_wy.ipynb) to
+feed 5-band 64×64 galaxy images and their spectroscopic redshifts to the model.
+
+Supports: per-image pixel normalisation (std or minmax), optional label
+scaling, one-hot / smooth label encoding, and albumentations augmentation.
+"""
+
 import h5py
 import torch
 from torch.utils.data import Dataset

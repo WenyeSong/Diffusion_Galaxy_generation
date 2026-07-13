@@ -12,10 +12,10 @@ import matplotlib.pyplot as plt
 from scipy.stats import sem
 
 # ─── Load CSVs ─────────────────────────────────────────────────────────────────
-PAPER_TEST_CSV = './testing_metrics.csv'                        # paper Real for Figure 3
-SEP_TEST_CSV   = './testing_images_metrics_wy_fit_sersic.csv'   # our SEP Real for Figure 4
-GEN_CSV        = './generated_images_metrics_wy_fit_sersic.csv' # our generated images
-ANDREW_CSV     = './AndrewMetrics.csv'                           # paper's generated images
+PAPER_TEST_CSV = './results/testing_metrics.csv'                        # paper Real for Figure 3
+SEP_TEST_CSV   = './results/testing_images_metrics_wy_fit_sersic.csv'   # our SEP Real for Figure 4
+GEN_CSV        = './results/generated_images_metrics_wy_fit_sersic.csv' # our generated images
+ANDREW_CSV     = './results/AndrewMetrics.csv'                           # paper's generated images
 
 paper_test = pd.read_csv(PAPER_TEST_CSV)
 sep_test   = pd.read_csv(SEP_TEST_CSV)

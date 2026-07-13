@@ -1,3 +1,17 @@
+"""
+Batch generation script for the redshift-conditioned DDPM (HPC version).
+
+Loads the trained EMA model, samples redshifts from the real test set,
+and generates NUM_IMAGES (default 10,000) synthetic 5-band 64x64 galaxy
+images in batches, saving each as an individual .pt file.
+
+Output directory: OUTPUT_DIR (defined below)
+  generated_image_XXXXX.pt    — one tensor (5, 64, 64) per file
+  generated_redshifts.npy     — corresponding redshift values
+
+Run on HPC with submit_generate.sh (GPU recommended; ~30 min on A100).
+"""
+
 import os
 import sys
 import torch

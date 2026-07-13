@@ -10,7 +10,7 @@ Outputs (all written to the same directory as this script):
     loss_curve.png            — train/val loss plot
 """
 
-import os, json, time, glob
+import os, sys, json, time, glob
 import numpy as np
 import h5py
 import torch
@@ -18,6 +18,7 @@ import torch.nn as nn
 from torch.utils.data import Dataset, DataLoader
 import matplotlib.pyplot as plt
 
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from model import MorphCNN
 
 # ── Config ─────────────────────────────────────────────────────────────────
@@ -37,13 +38,13 @@ LR         = 3e-4
 NUM_WORKERS = 0      # HDF5 doesn't support multiprocessing reads safely on macOS
 DEVICE     = "mps" if torch.backends.mps.is_available() else "cpu"
 
-CKPT_DIR   = os.path.join(HERE, "checkpoints")
+CKPT_DIR   = os.path.join(HERE, "..", "checkpoints")
 CKPT_EVERY = 2
 os.makedirs(CKPT_DIR, exist_ok=True)
 
 
 # ── Normaliser ─────────────────────────────────────────────────────────────
-with open(os.path.join(HERE, "normaliser.json")) as fp:
+with open(os.path.join(HERE, "..", "normaliser.json")) as fp:
     NORM = json.load(fp)
 
 def normalise(arr_dict):
@@ -101,7 +102,7 @@ class GalaxyDataset(Dataset):
 # ── Image preprocessing ────────────────────────────────────────────────────
 # Per-channel asinh stretch + standardise using training-set statistics.
 # We compute channel stats lazily from a small sample if not cached.
-STATS_FILE = os.path.join(HERE, "image_stats.json")
+STATS_FILE = os.path.join(HERE, "..", "image_stats.json")
 
 def compute_image_stats(hdf5_path, indices, n_sample=2000):
     rng = np.random.default_rng(0)
@@ -165,8 +166,8 @@ def main():
     print(f"Device: {DEVICE}")
 
     # --- load / compute image stats ---
-    train_idx = np.load(os.path.join(HERE, "indices_train.npy"))
-    val_idx   = np.load(os.path.join(HERE, "indices_val.npy"))
+    train_idx = np.load(os.path.join(HERE, "..", "data/indices_train.npy"))
+    val_idx   = np.load(os.path.join(HERE, "..", "data/indices_val.npy"))
 
     img_stats = load_image_stats()
     if img_stats is None:
@@ -248,7 +249,7 @@ def main():
     ax.set_title("Training curve")
     ax.legend()
     plt.tight_layout()
-    plt.savefig(os.path.join(HERE, "figures/loss_curve.png"), dpi=110)
+    plt.savefig(os.path.join(HERE, "..", "figures/loss_curve.png"), dpi=110)
     print(f"\nDone. Best val loss: {best_val:.5f}")
     print(f"Loss curve saved to loss_curve.png")
 

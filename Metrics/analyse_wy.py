@@ -16,10 +16,10 @@ OUT_DIR = './figures_wy'
 os.makedirs(OUT_DIR, exist_ok=True)
 
 # ─── Load CSVs ─────────────────────────────────────────────────────────────────
-TEST_CSV   = './testing_images_metrics_wy_fit_sersic.csv'
-GEN_CSV    = './generated_images_metrics_wy_fit_sersic.csv'
-ANDREW_CSV = './AndrewMetrics.csv'
-ORIG_TEST  = './testing_metrics.csv'
+TEST_CSV   = './results/testing_images_metrics_wy_fit_sersic.csv'
+GEN_CSV    = './results/generated_images_metrics_wy_fit_sersic.csv'
+ANDREW_CSV = './results/AndrewMetrics.csv'
+ORIG_TEST  = './results/testing_metrics.csv'
 
 test_df   = pd.read_csv(TEST_CSV)
 gen_df    = pd.read_csv(GEN_CSV)

@@ -1,3 +1,11 @@
+"""
+Miscellaneous utility functions for the DDPM training pipeline.
+
+save_images    Arranges a batch of image tensors into a grid and saves to disk.
+setup_logging  Creates the standard model/ and results/ directory structure
+               needed before a training run starts.
+"""
+
 import os
 import torch
 import torchvision

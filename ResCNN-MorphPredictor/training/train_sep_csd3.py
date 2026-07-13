@@ -13,7 +13,7 @@ Usage (via SLURM, see submit_rescnn.sh — point it at this file):
     python train_sep_csd3.py
 """
 
-import os, json, time, glob
+import os, sys, json, time, glob
 import numpy as np
 import pandas as pd
 import h5py
@@ -24,13 +24,14 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from model import MorphCNN
 
 # ── paths ─────────────────────────────────────────────────────────────────────
 HERE      = os.path.dirname(os.path.abspath(__file__))
 DATA_DIR  = "/rds/user/ws452/hpc-work/lizarraga_2024/data"
-SEP_DIR   = os.path.join(HERE, "sep_labels")
-CKPT_DIR  = os.path.join(HERE, "checkpoints_sep")
+SEP_DIR   = os.path.join(HERE, "..", "sep_labels")
+CKPT_DIR  = os.path.join(HERE, "..", "checkpoints_sep")
 os.makedirs(CKPT_DIR, exist_ok=True)
 
 HDF5 = {
@@ -87,7 +88,7 @@ val_df   = load_sep_csv("val")
 
 
 # ── build normaliser from training SEP labels ─────────────────────────────────
-NORM_FILE = os.path.join(HERE, "normaliser_sep.json")
+NORM_FILE = os.path.join(HERE, "..", "normaliser_sep.json")
 
 def build_normaliser(df):
     norm = {}
@@ -139,7 +140,7 @@ def denormalise(arr):
 
 
 # ── load images from HDF5 ─────────────────────────────────────────────────────
-STATS_FILE = os.path.join(HERE, "image_stats.json")
+STATS_FILE = os.path.join(HERE, "..", "image_stats.json")
 
 def load_images_and_labels(hdf5_path, df, desc=""):
     hdf5_idx = df["hdf5_index"].values.astype(int)
@@ -275,6 +276,6 @@ ax.set_xlabel("Epoch"); ax.set_ylabel("Huber Loss")
 ax.set_title("ResCNN SEP-label training curve")
 ax.legend(); ax.grid(True, alpha=0.3)
 plt.tight_layout()
-plt.savefig(os.path.join(HERE, "figures/loss_curve_sep.png"), dpi=110)
+plt.savefig(os.path.join(HERE, "..", "figures/loss_curve_sep.png"), dpi=110)
 print(f"\nDone. Best val loss: {best_val:.5f}")
 print("Saved loss_curve_sep.png")
